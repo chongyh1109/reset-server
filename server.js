@@ -8,30 +8,35 @@ app.use(express.json());
 
 let verificationCodes = {};
 
+app.get("/", (req, res) => {
+  res.send("Reset Server is running 🚀");
+});
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "mpprojectteam2026@gmail.com",
-    pass: "dkpmfedimyxdvzdg"
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
-});
-
-app.get("/", (req, res) => {
-  res.send("Reset Server is running 🚀");
 });
 
 app.post("/send-code", async (req, res) => {
   const { email } = req.body;
 
+  if (!email) {
+    return res.json({ success: false, message: "Email required" });
+  }
+
   const code = Math.floor(100000 + Math.random() * 900000).toString();
+
   verificationCodes[email] = code;
 
   try {
     await transporter.sendMail({
-      from: "mpprojectteam2026@gmail.com",
+      from: process.env.EMAIL_USER,
       to: email,
-      subject: "Password Reset Code",
-      text: `Your 6-digit code is: ${code}`
+      subject: "Your Password Reset Code",
+      text: `Your 6-digit verification code is: ${code}`
     });
 
     res.json({ success: true });
