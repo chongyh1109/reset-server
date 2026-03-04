@@ -16,7 +16,6 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// 发送验证码
 app.post("/send-code", async (req, res) => {
   const { email } = req.body;
 
@@ -48,6 +47,8 @@ app.post("/verify-code", (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Server running");
 });
