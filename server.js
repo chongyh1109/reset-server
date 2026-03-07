@@ -59,7 +59,7 @@ app.post("/send-code", async (req, res) => {
       text: `Your 6-digit verification code is: ${code}`
     });
 
-    console.log("Email sent to:", email);
+    console.log("Email sent to:", info.response);
 
     res.json({ success: true });
 
