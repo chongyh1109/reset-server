@@ -59,10 +59,13 @@ app.post("/send-code", async (req, res) => {
       text: `Your 6-digit verification code is: ${code}`
     });
 
+    console.log("Email sent to:", email);
+
     res.json({ success: true });
 
   } catch (error) {
 
+    console.log("Email error:", error);
     res.json({ success: false, error: error.message });
 
   }
