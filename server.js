@@ -52,7 +52,7 @@ app.post("/send-code", async (req, res) => {
   sendCooldown[email] = now;
 
   try {
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Your Password Reset Code",
