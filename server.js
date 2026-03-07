@@ -66,20 +66,6 @@ app.post("/send-code", async (req, res) => {
 
 });
 
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Your Password Reset Code",
-      text: `Your 6-digit verification code is: ${code}`
-    });
-
-    res.json({ success: true });
-  } catch (error) {
-    res.json({ success: false, error: error.message });
-  }
-});
-
 app.post("/verify-code", (req, res) => {
 
   const { email, code } = req.body;
