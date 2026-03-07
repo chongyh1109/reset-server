@@ -24,6 +24,9 @@ const transporter = nodemailer.createTransport({
 
 app.post("/send-code", async (req, res) => {
 
+  console.log("Send-code API called");
+  console.log("Request body:", req.body);
+
   const { email } = req.body;
 
   if (!email) {
