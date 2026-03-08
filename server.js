@@ -18,7 +18,6 @@ const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
-  requireTLS: true,
 
   auth: {
     user: process.env.EMAIL_USER,
@@ -26,8 +25,10 @@ const transporter = nodemailer.createTransport({
   },
 
   tls: {
-    family: 4
-  }
+    rejectUnauthorized: false
+  },
+
+  family: 4
 });
 
 app.post("/send-code", async (req, res) => {
