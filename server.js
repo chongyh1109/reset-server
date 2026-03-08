@@ -15,7 +15,7 @@ app.get("/", (req, res) => {
 });
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: "74.125.140.108",
   port: 587,
   secure: false,
 
@@ -26,9 +26,7 @@ const transporter = nodemailer.createTransport({
 
   tls: {
     rejectUnauthorized: false
-  },
-
-  family: 4
+  }
 });
 
 app.post("/send-code", async (req, res) => {
