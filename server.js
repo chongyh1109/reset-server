@@ -29,6 +29,26 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+
+function generateCode(){
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+
+async function sendEmail(email, code){
+
+  const info = await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Your Password Reset Code",
+    text: `Your 6-digit verification code is: ${code}`
+  });
+
+  console.log("Email sent:", info.response);
+}
+
+
+
 app.post("/send-code", async (req, res) => {
 
   console.log("Send-code API called");
@@ -49,7 +69,7 @@ app.post("/send-code", async (req, res) => {
     });
   }
 
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const code = generateCode();
 
   verificationCodes[email] = {
     code: code,
@@ -58,15 +78,11 @@ app.post("/send-code", async (req, res) => {
 
   sendCooldown[email] = now;
 
-  try {
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Your Password Reset Code",
-      text: `Your 6-digit verification code is: ${code}`
-    });
+  attempts[email] = 0;
 
-    console.log("Email sent to:", info.response);
+  try {
+
+    await sendEmail(email, code);
 
     res.json({ success: true });
 
@@ -78,6 +94,55 @@ app.post("/send-code", async (req, res) => {
   }
 
 });
+
+
+
+app.post("/resend-code", async (req, res) => {
+
+  console.log("Resend-code API called");
+
+  const { email } = req.body;
+
+  if (!email) {
+    return res.json({ success: false, message: "Email required" });
+  }
+
+  const now = Date.now();
+
+  if (sendCooldown[email] && now - sendCooldown[email] < 60000) {
+    return res.json({
+      success: false,
+      message: "Please wait 60 seconds before requesting again"
+    });
+  }
+
+  const code = generateCode();
+
+  verificationCodes[email] = {
+    code: code,
+    expire: Date.now() + 5 * 60 * 1000
+  };
+
+  sendCooldown[email] = now;
+
+  attempts[email] = 0;
+
+  try {
+
+    await sendEmail(email, code);
+
+    res.json({ success: true });
+
+  } catch (error) {
+
+    console.log("Email resend error:", error);
+    res.json({ success: false, error: error.message });
+
+  }
+
+});
+
+
 
 app.post("/verify-code", (req, res) => {
 
@@ -94,31 +159,44 @@ app.post("/verify-code", (req, res) => {
   }
 
   if (Date.now() > data.expire) {
+
     delete verificationCodes[email];
     attempts[email] = 0;
+
     return res.json({ success: false, message: "Code expired" });
+
   }
 
   if (data.code === code) {
+
     delete verificationCodes[email];
     attempts[email] = 0;
+
     return res.json({ success: true });
+
   }
 
   attempts[email]++;
 
   if (attempts[email] >= 3) {
+
     delete verificationCodes[email];
     attempts[email] = 0;
-    return res.json({ success: false, message: "Too many attempts. Request new code." });
+
+    return res.json({
+      success: false,
+      message: "Too many attempts. Request new code."
+    });
+
   }
 
   return res.json({ success: false, message: "Wrong code" });
 
 });
 
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("Server running");
+  console.log("Server running on port", PORT);
 });
